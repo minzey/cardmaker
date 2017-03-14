@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Card Maker</title>
+    <link href='https://fonts.googleapis.com/css?family=Amatic+SC' rel='stylesheet' type='text/css'>
+  </head>
+  <body>
+    <style>
+      :root {
+        --Vibrant: #c7b56e;
+        --Muted: #a9a77d;
+        --DarkVibrant: #737832;
+        --DarkMuted: #1e2211;
+        --LightVibrant: #ecc9c6;
+        --LightMuted: #FFF;
+      }
+      html, body,input, datalist, option, h1, h2, div,p,img{
+        margin: 0 0;
+        padding: 0 0;
+        border: none;
+        font-family:'helvetica neue';
+        font-size: 20px;
+        font-weight: 200;
+      }
+      .main{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        background: linear-gradient(to bottom,rgba(0,0,0,0.5),transparent),url(https://unsplash.it/1500/1000/?image=3&blur=50);
+        background-size: cover;
+        background-repeat: no-repeat;
+      }
+      h1, h2{
+        font-family: 'Amatic SC', cursive;
+        text-shadow:0 0 4px rgba(0, 0, 0, 0.72), 0 0 14px rgba(255, 255, 255, 0.45);
+        font-size: 5em;
+        font-weight: 500;
+        color: white;
+      }
+      h1{
+        margin-top: 30px;
+        flex: 2;
+      }
+      h2{
+        font-size: 3em;
+        flex: 1;
+      }
+      .searchbox{
+        flex: 1;
+      }
+      input{
+        padding: 5px 10px;
+        border-radius: 5px;
+        border: 1px solid aqua;
+        width: 500px;
+      }
+      input:focus{
+        box-shadow: 0.5px 0.5px 15px aqua;
+        border: none;
+
+      }
+      .loader{
+        color: white;
+        font-size: 1em;
+      }
+      .card{
+        visibility: collapse;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        flex: 1;
+        margin-top: 20px;
+      }
+      .card main{
+        display: flex;
+
+      }
+      footer{
+        display: flex;
+        height: 80px;
+        width: 500px;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--DarkMuted);
+      }
+      .bio{
+        min-height: 80px;
+        display: flex;
+        align-self: flex-start;
+        justify-content: center;
+        align-items: center;
+        min-width: 420px;
+        color: var(--Vibrant);
+        text-align: center;
+        font-style: italic;
+        font-size: 4vw;
+      }
+      #qrCode{
+        width: 80px;
+        height: 80px;
+        background-color: white;
+      }
+      .userInfo{
+        display: flex;
+        min-width: 300px;
+        min-height: 150px;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: var(--Muted);
+      }
+      .user{
+        color: var(--DarkVibrant);
+        font-size: 1.5em;
+        font-style: italic;
+        font-weight: bold;
+      }
+      .username{
+        color: var(--LightVibrant);
+      }
+      .blog, .email{
+        color: var(--DarkMuted);
+        font-size: 0.8em;
+      }
+      .card main img{
+        width: 200px;
+        height: 200px;
+      }
+      .userInfo div{
+        margin-top: 5px;
+        display: flex;
+        justify-content: center;
+      }
+      .repos, .gists, .followers{
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        font-size: 0.5em;
+        border: 0.5px solid var(--LightMuted);
+        padding: 4px 4px;
+        color: var(--DarkMuted);
+      }
+      .number{
+        /*font-size: 2em;*/
+      }
+
+    </style>
+    <div class="main">
+      <h1>Card Maker</h1>
+      <h2>Create custom developer cards of github users!</h2>
+      <div class="searchbox">
+        <input list="users" name="users" placeholder="Search github user">
+          <datalist id="users">
+
+          </datalist>
+          <p class="loader"><p>
+      <div>
+      <article class="card">
+        <main>
+          <img class="profilePic" alt="User image">
+          <div class="userInfo">
+            <p class="user">Name</p>
+            <p class="username">@username</p>
+            <p class="blog">Blog: www.username.com</p>
+            <p class="email">Email: username@host.com</p>
+            <div>
+              <div class="repos">
+                <p class="number">##</p>
+                <p>REPOS</p>
+              </div>
+              <div class="gists">
+                <p class="number">##</p>
+                <p>GISTS</p>
+              </div>
+              <div class="followers">
+                <p class="number">###</p>
+                <p>FOLLOWERS</p>
+              </div>
+            </div>
+          </div>
+        </main>
+        <footer>
+          <div class="bio">
+            <p class="bioValue">Description of bio.</p>
+          </div>
+          <div id="qrCode">
+
+          </div>
+        </footer>
+      </article>
+    </div>
+  </body>
+  <script src="Vibrant.min.js"></script>
+  <script src="qrcode.min.js"></script>
+  <script>
+    const list = document.querySelector('datalist');
+    const query = document.querySelector('input');
+    const loader = document.querySelector('.loader');
+    let timer
+
+    function request(url, callback){
+      var xhr = new XMLHttpRequest();
+      xhr.open('GET', url, true);
+      xhr.send();
+      console.log('request sent');
+      xhr.addEventListener("readystatechange", callback, false);
+      return xhr;
+    }
+
+    function generateCard(username){
+      const card = document.querySelector('.card');
+      var avatar = document.querySelector('.profilePic');
+      var qr = document.getElementById("qrCode");
+      avatar.innerHTML='';
+      qr.innerHTML='';
+      loader.innerHTML = 'Generating card...';
+      var xhr = request("https://api.github.com/users/"+username, generateCardcb)
+      function generateCardcb(e){
+        if (xhr.readyState == 4 && xhr.status == 200) {
+          var response = JSON.parse(xhr.responseText);
+          //object destructuring B-)
+          var {login,avatar_url,name,blog,email,bio,repos_url,public_repos,public_gists,followers} = response;
+
+          avatar.setAttribute('src', avatar_url)
+
+          avatar.addEventListener('load', function() {
+            console.log('IMAGE LOAD INVOKED');
+            var vibrant = new Vibrant(avatar);
+            var swatches = vibrant.swatches()
+            for (var swatch in swatches){
+              if (swatches.hasOwnProperty(swatch) && swatches[swatch]){
+                  console.log(swatch, swatches[swatch].getHex())
+                  document.documentElement.style.setProperty(`--${swatch}`, swatches[swatch].getHex());
+                }
+              }
+          });
+          avatar.crossOrigin='Anonymous';
+
+          document.querySelector('.user').innerHTML = name;
+          document.querySelector('.username').innerHTML = '@'+login;
+          document.querySelector('.blog').innerHTML = 'Blog: '+blog;
+          document.querySelector('.email').innerHTML = 'Email: '+email;
+          document.querySelector('.repos .number').innerHTML = public_repos;
+          document.querySelector('.gists .number').innerHTML = public_gists;
+          document.querySelector('.followers .number').innerHTML = followers;
+          document.querySelector('.bioValue').innerHTML = bio || 'Information about my repos in QR Code ->';
+
+          card.style.visibility = 'visible';
+          loader.innerHTML='';
+          qr.innerHTML = '';
+          new QRCode(qr, {
+                    text: repos_url,
+                    width: 80,
+                    height: 80,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.H
+                });
+        }
+      }
+    }
+
+    function mySearch (){
+      let search = query.value;
+      console.log(search);
+      if(search === ''){
+        return;
+      }
+      loader.innerHTML = 'Loading...'
+      var xhr = request("https://api.github.com/search/users?q="+search, populateList)
+      function populateList(e){
+        console.log(e);
+        //using CLOSURE here like a BOSS B-)
+        if (xhr.readyState == 4 && xhr.status == 200) {
+            list.innerHTML = '';
+            loader.innerHTML = '';
+            var response = JSON.parse(xhr.responseText);
+            console.log(response);
+            var users = response.items.map(user => `<option>${user.login}</option>`).join('');
+            console.log(users);
+            list.innerHTML = users;
+            query.value='';
+            query.addEventListener('input', function (e) {
+              console.log(e);
+              if(users.includes(`<option>${this.value}</option>`)){
+                console.log('INPUT SELECTED - '+this.value);
+                generateCard(this.value);
+              }
+            });
+         }
+      }
+    }
+    query.addEventListener('keyup', function(e){
+      if (timer) {
+          clearTimeout(timer);
+      }
+      timer = setTimeout(mySearch, 2000);
+    });
+
+    query.addEventListener('keydown', function (e) {
+      clearTimeout(timer);
+    });
+
+  </script>
+</html>
